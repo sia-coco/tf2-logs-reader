@@ -1,0 +1,7 @@
+*.json
+*.txt
+__pycache__/
+*.pdf
+*.db
+notes.txt
+.vscode
