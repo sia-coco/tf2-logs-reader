@@ -17,6 +17,8 @@ PLAYER_NAMES   = os.path.join(DATA_FOLDER, "player_names.json")
 TIMEOUT_DELAY = 4
 
 LOGS_LIST_URL = "http://logs.tf/api/v1/log"
+LOGS_URL = "http://logs.tf/json"
+DOWNLOAD_SLEEP_DELAY = 0.1
 
 URL64_TF2C    = "76561197964045534"
 URL64_SERVEME = "76561197960497430"

@@ -7,8 +7,11 @@
 ########################
 
 # IMPORTS
+import os
 import requests
 from requests.exceptions import HTTPError
+import json
+import time
 
 # CUSTOM IMPORTS
 import config as cfg
@@ -113,6 +116,61 @@ class LogsRetriever():
         return (trusted_uploaders_log_list, other_log_list)
     
 
+    ###### DOWNLOAD LOGS ######
+
+    def downloadLogsFromList(self):
+        """ Downloads logs from the list to the local directory.
+        """ 
+        
+        # Getting the list of all the id's from the logs we want to download
+        logs_ids_list = [str(log["id"]) for log in self.log_list]
+        old_size = len(logs_ids_list)
+
+        # Getting the list of all the id's from already downloaded logs
+        already_dowloaded_logs = [log.split(".")[0] for log in os.listdir(cfg.LOGS_DIR) if os.path.isfile(os.path.join(cfg.LOGS_DIR, log))]
+
+        logs_ids_list = [log_id for log_id in logs_ids_list if log_id not in already_dowloaded_logs]
+        new_size = len(logs_ids_list)
+
+        print(f"{old_size - new_size} logs already downloaded. Remaining amount to download: {new_size}")
+
+
+        dl_count = 0
+        for log_id in logs_ids_list:
+
+
+            downloaded = False
+
+            while not downloaded:
+
+                # Sleeps to avoid downloding to quickly and getting denied by server
+                time.sleep(cfg.DOWNLOAD_SLEEP_DELAY)
+
+                # Downloading
+                json_log = getResponse(cfg.LOGS_URL+"/"+log_id)
+
+                if json_log is not None:
+                    downloaded = True
+
+                    # Converting to string
+                    json_string = json.dumps(json_log)
+
+                    # Saving in a corresponding file
+                    log_file = open(os.path.join(cfg.LOGS_DIR, log_id + ".json"), 'w')
+                    log_file.write(json_string)
+                    log_file.close()
+                
+                else:
+
+                    print(f" > ERROR in logs-retriever : log {log_id} didn't get downloaded. Retrying.")
+
+            dl_count += 1
+            print(f"{dl_count}/{new_size}")
+
+        print(" > Done downloading")
+
+
+
     ###### USER UTILITY/PRINTS ######
 
     def profilePlayersLogs(self):
@@ -132,7 +190,7 @@ class LogsRetriever():
 ##################| FUNCTIONS |#####################
 ####################################################
 
-def getResponse(url, request_args):
+def getResponse(url, request_args={}):
     """ Gets the json response from a query.
 
     INPUTS:
@@ -161,20 +219,20 @@ def getResponse(url, request_args):
         return response.json()
 
 def getLogsList(request_args):
-        """ Retrieves json list of logs answer from logs.tf using search parameters.
+    """ Retrieves json list of logs answer from logs.tf using search parameters.
 
-        request_args = {"title":X, "uploader":Y, "player": Z, "limit": N, "offset": N}
+    request_args = {"title":X, "uploader":Y, "player": Z, "limit": N, "offset": N}
 
-        INPUTS:
-                dict or arguments for the api request (see above)
+    INPUTS:
+            dict or arguments for the api request (see above)
 
-        OUTPUT:
-                the response of logs.tf api for list of logs
-        """ 
-        
-        url = cfg.LOGS_LIST_URL
+    OUTPUT:
+            the response of logs.tf api for list of logs
+    """ 
+    
+    url = cfg.LOGS_LIST_URL
 
-        return getResponse(url, request_args)
+    return getResponse(url, request_args)
 
 
 ####################################################
@@ -202,21 +260,22 @@ if __name__ == '__main__':
     players = {
         "sia": "76561198377453187"}
 
-    players = {
-        "osb, kimmy": "76561198159697916,76561198145652139",
-        "smi, kim, osb": "76561198159697916,76561198145652139,76561198056760624", 
-        "smi, kim, osb, sia": "76561198159697916,76561198145652139,76561198056760624,76561198377453187", 
-        "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759", 
-        "smi, kim, osb, sia, hud, snb": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759,76561198021205963",}
+    # players = {
+    #     "osb, kimmy": "76561198159697916,76561198145652139",
+    #     "smi, kim, osb": "76561198159697916,76561198145652139,76561198056760624", 
+    #     "smi, kim, osb, sia": "76561198159697916,76561198145652139,76561198056760624,76561198377453187", 
+    #     "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759", 
+    #     "smi, kim, osb, sia, hud, snb": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759,76561198021205963",}
 
     for players_id in players: 
 
         print(players_id)
 
-        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 10000, "offset": None}
+        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 50, "offset": None}
         obj = LogsRetriever(args)
 
         obj.main()
+        obj.downloadLogsFromList()
 
         print()
 
