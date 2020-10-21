@@ -271,7 +271,7 @@ if __name__ == '__main__':
 
         print(players_id)
 
-        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 50, "offset": None}
+        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 100, "offset": None}
         obj = LogsRetriever(args)
 
         obj.main()

@@ -1,1 +1,1 @@
-python3.7 tf2_logs_reader/main.py
+python3 tf2_logs_reader/main.py

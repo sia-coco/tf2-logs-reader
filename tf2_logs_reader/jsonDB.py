@@ -306,43 +306,46 @@ def quickRecap(players_id, classes):
             if deaths != 0:
                 kd = round(kills/deaths, 2)
             else:
-                kd = None
+                kd = kills
 
             if mins != 0:
                 dpm = round(dam/mins, 2)
             else:
-                dpm = None
+                dpm = dam
 
             player_interresting_stats = {"id": player.steam_id, "name": player.name, "class": ligne, "dpm": dpm, "kd": kd, "mins": int(mins), "kPerHH": kPerHH}
             players_interresting_stats.append(player_interresting_stats)
 
     return players_interresting_stats
 
-def recapDisplay(recap_stats):
+def recapDisplay(recap_stats, sort_keys):
     """ #TODO
 
     INPUTS:
     OUTPUT:
     """
 
-    for sort_key in ["dpm", "kd", "kPerHH"]:
+    for sort_key in sort_keys:
         print()
         print(sort_key)
         players_interresting_stats = [p for p in recap_stats if p["mins"] != 0]
         players_interresting_stats.sort(key=lambda l: l[sort_key], reverse=True)
 
-        print(f'{"name":17} {"mins":8} {"dpm":8} {"kd":8}  {"kPerHH":8}')
+        print(f'{"name":29} {"mins":8} {"dpm":8} {"kd":8}  {"kPerHH":8}')
         print()
 
         for l in players_interresting_stats:
-            if l["mins"] > 31:
-                print(f'{l["name"]:15} {l["mins"]:8} {l["dpm"]:8} {l["kd"]:8}  {l["kPerHH"]:8} {l["id"]:15} {l["class"]:15}')
+            # Only takes plqyers that have a certain time (in minutes) on the class
+            if l["mins"] > 150:
+                print(f'{l["name"]:25} {l["mins"]:8} {l["dpm"]:8} {l["kd"]:8}  {l["kPerHH"]:8} {l["id"]:15} {l["class"]:15}')
 
 ####################################################
 ####################| PROGRAM |#####################
 ####################################################
 
 if __name__ == "__main__" :
+
+    pass
     
     # clearDatabase()
 

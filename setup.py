@@ -108,7 +108,7 @@ def setupSQL():
 
 if __name__ == "__main__" :
 
-    q = input("Do you want to setup the folder? (y/n): ")
+    q = input("Do you want to setup the folder workspace? (y/n): ")
     if q == "y":
         setup()
 
