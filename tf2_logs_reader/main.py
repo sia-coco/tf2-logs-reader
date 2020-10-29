@@ -58,6 +58,8 @@ https://docs.google.com/document/d/1AMu7iY0VBXkfSu3Mua0zbEwhFf8uC2POKNhb3PydBg4/
 
 if __name__ == "__main__" :
 
+    # jsonDB.clearDatabase(True, True)
+
     # # Gets data from all the logs in the logs folder
     jsonDB.saveAllLogs()
 
@@ -66,12 +68,12 @@ if __name__ == "__main__" :
 
     # print(jsonDB.profilePlayerClasses(players_id[0], ["soldier"]))
 
-    classes_for_analysis = ["demoman", "scout", "soldier"]
-    classes_for_analysis = ["soldier"]
+    # classes_for_analysis = ["demoman", "scout", "soldier"]
+    classes_for_analysis = ["demoman"]
 
+    # sort_keys = ["dpm", "kd", "kPerHH"]
     sort_keys = ["dpm", "kd", "kPerHH"]
-    # sort_keys = ["dpm", "kd"]
 
     players_interresting_stats = jsonDB.quickRecap(players_id, classes_for_analysis)
-    jsonDB.recapDisplay(players_interresting_stats, sort_keys)
+    jsonDB.recapDisplay(players_interresting_stats, sort_keys, 70)
 

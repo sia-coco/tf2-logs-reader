@@ -37,7 +37,7 @@ From the root directory, execute the launch script :
 ```
 sh tf2-logs-reader.sh
 ```
-This executesthe main program, you should always try to only execute the project with it.
+This executes the main program, you should always try to only execute the project with it.
 
 
 

@@ -292,6 +292,8 @@ def quickRecap(players_id, classes):
 
             matches = class_data[ligne]["matches_played"]
             mins    = class_data[ligne]["total_time"]/60
+            if mins == 0:
+                mins = 0.001
             kills   = class_data[ligne]["kills"]
             dam     = class_data[ligne]["dmg"]
             deaths  = class_data[ligne]["deaths"]
@@ -318,7 +320,7 @@ def quickRecap(players_id, classes):
 
     return players_interresting_stats
 
-def recapDisplay(recap_stats, sort_keys):
+def recapDisplay(recap_stats, sort_keys, min_time_played):
     """ #TODO
 
     INPUTS:
@@ -336,7 +338,7 @@ def recapDisplay(recap_stats, sort_keys):
 
         for l in players_interresting_stats:
             # Only takes plqyers that have a certain time (in minutes) on the class
-            if l["mins"] > 150:
+            if l["mins"] >= min_time_played:
                 print(f'{l["name"]:25} {l["mins"]:8} {l["dpm"]:8} {l["kd"]:8}  {l["kPerHH"]:8} {l["id"]:15} {l["class"]:15}')
 
 ####################################################

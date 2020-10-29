@@ -52,26 +52,36 @@ class LogsRetriever():
         self.log_list         = None
 
 
-    def main(self):
+    def main(self, clean_params):
         """ 
         """ 
 
         self.logs_tf_response = getLogsList(self.request_args)
         self.log_list = self.logs_tf_response["logs"]
 
+        self.cleanLogList(**clean_params)
+
         self.profilePlayersLogs()
 
 
     ###### CLEAN LOG LIST ######
 
-    def cleanLogList(self, split_trusted=False):
+    def cleanLogList(self, split_trusted=False, time_frame=[None, None], player_frame=[None, None]):
         """  Cleans the log list according to given criterias
             
     
         INPUTS: 
                 (option) keep logs from trusted uploaders
         """ 
-        pass
+
+        if split_trusted:
+            self.log_list, untrusted_logs = self.splitLogsTrustedUntrusted()
+        
+        # Selects logs from a certain time frame
+        self.log_list = selectLogsListFrame(self.log_list, "date", time_frame)
+
+        # Select logs with certqin amounts of players (to get games from particular formats)
+        self.log_list = selectLogsListFrame(self.log_list, "players", player_frame)
 
 
     def splitLogsTrustedUntrusted(self):
@@ -115,6 +125,7 @@ class LogsRetriever():
 
         return (trusted_uploaders_log_list, other_log_list)
     
+
 
     ###### DOWNLOAD LOGS ######
 
@@ -234,6 +245,50 @@ def getLogsList(request_args):
 
     return getResponse(url, request_args)
 
+def selectLogsListFrame(log_list, field, frame=(None, None)):
+    """ Only keeps logs in the log list that are within a given value frame.
+
+    frame (min,max) values are included in the output
+
+    fields: ["id", "title", "map", "date", "views", "players"]
+
+    frame values:
+        - "id" is the log id on logs.tf
+        - "title" is the log title on logs.tf
+        - "map" is the exact name of the map desired
+        - "date" is the date of submission of the log in seconds from epoch
+            https://www.epochconverter.com/
+        - "views" the amount of times the log has been viewed on logs.tf
+        - "players" the amount of players who participated in the game
+
+    INPUTS: 
+            the log list [{field1, field2, ..}, ..]
+            the field we want to use as filter
+            a couple of (min,max) value for the given field
+
+    OUTPUT:
+            list of the logs remaining after filtering
+    """ 
+    print(f"size of list before {field} filter : {len(log_list)}")
+        
+    if frame[0] is not None:
+        log_list = [log for log in log_list if log[field]>= frame[0]]
+
+    if frame[1] is not None:
+        log_list = [log for log in log_list if log[field]<= frame[1]]
+
+    print(f"size of list after {field} filter : {len(log_list)}")
+
+    return log_list
+
+def removeDuplicates():
+    """  Detects and removes logs that got sent twice to logs.tf through 
+    multiple uploaders.
+
+    INPUTS: 
+    OUTPUT:
+    """ 
+    pass
 
 ####################################################
 ###################| CONSTANTS |####################
@@ -255,7 +310,7 @@ if __name__ == '__main__':
     #     "houdini": "76561198020644759"}
 
     # players = {
-    #     "pitts": "76561198091606463"}
+    #     "houd": "76561198020644759"}
 
     players = {
         "sia": "76561198377453187"}
@@ -267,14 +322,20 @@ if __name__ == '__main__':
     #     "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759", 
     #     "smi, kim, osb, sia, hud, snb": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759,76561198021205963",}
 
+    # players = {
+    #     "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759",}
+
+
+    clean_params = {"split_trusted":False, "time_frame":[None, None], "player_frame":[12, 14]}
+
     for players_id in players: 
 
         print(players_id)
 
-        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 100, "offset": None}
+        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 200, "offset": None}
         obj = LogsRetriever(args)
 
-        obj.main()
+        obj.main(clean_params)
         obj.downloadLogsFromList()
 
         print()
