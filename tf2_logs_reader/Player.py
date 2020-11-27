@@ -92,7 +92,7 @@ class Player():
             # Sets the name of the player
             self.name = names_dict[self.steam_id]
 
-        else:
+        elif cfg.DEBUG_MODE:
             print(f"player {self.steam_id} has no name in the name table.")
 
     def cleanMatch(self, match_id, keys_toRemove):

@@ -12,6 +12,7 @@ import requests
 from requests.exceptions import HTTPError
 import json
 import time
+import itertools
 
 # CUSTOM IMPORTS
 import config as cfg
@@ -61,12 +62,13 @@ class LogsRetriever():
 
         self.cleanLogList(**clean_params)
 
-        self.profilePlayersLogs()
+        if cfg.DEBUG_MODE:
+            self.profilePlayersLogs()
 
 
     ###### CLEAN LOG LIST ######
 
-    def cleanLogList(self, split_trusted=False, time_frame=[None, None], player_frame=[None, None]):
+    def cleanLogList(self, split_trusted=False, time_frame=[None, None], player_frame=[None, None], map_frame=None):
         """  Cleans the log list according to given criterias
             
     
@@ -78,10 +80,13 @@ class LogsRetriever():
             self.log_list, untrusted_logs = self.splitLogsTrustedUntrusted()
         
         # Selects logs from a certain time frame
-        self.log_list = selectLogsListFrame(self.log_list, "date", time_frame)
+        self.log_list = selectLogsListFrame(self.log_list, "date", frame=time_frame)
 
-        # Select logs with certqin amounts of players (to get games from particular formats)
-        self.log_list = selectLogsListFrame(self.log_list, "players", player_frame)
+        # Select logs with certain amounts of players (to get games from particular formats)
+        self.log_list = selectLogsListFrame(self.log_list, "players", frame=player_frame)
+
+        # Select logs of particular maps
+        self.log_list = selectLogsListFrame(self.log_list, "map", str_frame=map_frame)
 
 
     def splitLogsTrustedUntrusted(self):
@@ -185,7 +190,7 @@ class LogsRetriever():
     ###### USER UTILITY/PRINTS ######
 
     def profilePlayersLogs(self):
-        """  For each player, prints a recap of their logs.
+        """  Prints a recap of the logs.
 
         """ 
         
@@ -245,7 +250,7 @@ def getLogsList(request_args):
 
     return getResponse(url, request_args)
 
-def selectLogsListFrame(log_list, field, frame=(None, None)):
+def selectLogsListFrame(log_list, field, frame=(None, None), str_frame=None):
     """ Only keeps logs in the log list that are within a given value frame.
 
     frame (min,max) values are included in the output
@@ -269,15 +274,25 @@ def selectLogsListFrame(log_list, field, frame=(None, None)):
     OUTPUT:
             list of the logs remaining after filtering
     """ 
-    print(f"size of list before {field} filter : {len(log_list)}")
+    if cfg.DEBUG_MODE:
+        print(f"size of list before {field} filter : {len(log_list)}")
+
+    if field in ["id", "date", "views", "players"]:
         
-    if frame[0] is not None:
-        log_list = [log for log in log_list if log[field]>= frame[0]]
+        if frame[0] is not None:
+            log_list = [log for log in log_list if log[field]>= frame[0]]
+        if frame[1] is not None:
+            log_list = [log for log in log_list if log[field]<= frame[1]]
 
-    if frame[1] is not None:
-        log_list = [log for log in log_list if log[field]<= frame[1]]
+    elif field in ["title", "map"]:
+        if str_frame is not None:
+            log_list = [log for log in log_list if log[field] in str_frame]
 
-    print(f"size of list after {field} filter : {len(log_list)}")
+    else :
+        print(f" > ERROR: logs-retriever.py, selectLogsListFrame, field '{field}' unknown.")
+
+    if cfg.DEBUG_MODE:
+        print(f"size of list after {field} filter : {len(log_list)}")
 
     return log_list
 
@@ -290,6 +305,27 @@ def removeDuplicates():
     """ 
     pass
 
+def kPlayersFromTeam(team, k, team_name):
+    """  Generates combinations of k players from a team
+
+    INPUTS: 
+            a team dict: {"team name": {"player 1": id_1, ...}}
+            amount of players for each sub group
+            team name: str
+    OUTPUT:
+            a player dict: {"team - player1, player2, ...": "id1, id2, ..."}
+    """ 
+    
+    combs = [comb for comb in itertools.combinations(team, k)]
+
+    players = {}
+
+    for comb in combs:
+            
+        players[team_name+" - "+", ".join(comb)] = ", ".join([team[player_name] for player_name in comb])
+
+    return players  
+
 ####################################################
 ###################| CONSTANTS |####################
 ####################################################
@@ -300,39 +336,114 @@ def removeDuplicates():
 ####################################################
 
 if __name__ == '__main__':
+    
+
+    players = {}
 
     # players = {
-    #     "sia": "76561198377453187", 
-    #     "kimmy": "76561198159697916", 
-    #     "osborn": "76561198145652139", 
-    #     "smiguel": "76561198056760624", 
-    #     "snb": "76561198021205963",
-    #     "houdini": "76561198020644759"}
+    #     "mystt, daga, marv": "76561198114545358, 76561198105323129, 76561198042599456"}
+
 
     # players = {
-    #     "houd": "76561198020644759"}
+    #     "sia": "76561198377453187"}
 
-    players = {
-        "sia": "76561198377453187"}
+    # teams = {
+    #     "Weebtech": {"aqua": "76561198800637336", 
+    #                 "Frager": "76561198323411853", 
+    #                 "strange_magic": "76561197993508562",
+    #                 "Houf": "76561198448050535", 
+    #                 "Miku": "76561198127793996",},
+    # }
 
-    # players = {
-    #     "osb, kimmy": "76561198159697916,76561198145652139",
-    #     "smi, kim, osb": "76561198159697916,76561198145652139,76561198056760624", 
-    #     "smi, kim, osb, sia": "76561198159697916,76561198145652139,76561198056760624,76561198377453187", 
-    #     "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759", 
-    #     "smi, kim, osb, sia, hud, snb": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759,76561198021205963",}
+    teams = {
+        "Gucci": {"smi": "76561198056760624", 
+                    "sia": "76561198377453187", 
+                    # "hud": "76561198020644759", 
+                    "Dying Tom": "76561197975576152",
+                    "snb": "76561198021205963", 
+                    "neko": "76561198144936805",
+                    "b4ro": "76561198041043955"},
 
-    # players = {
-    #     "smi, kim, osb, sia, hud": "76561198159697916,76561198145652139,76561198056760624,76561198377453187,76561198020644759",}
+        "frenchies": {"rdm": "76561198075159093", 
+                    "Reyviix": "76561198268216386",
+                    "azitio": "76561198084056439", 
+                    "gtlm": "76561198084798301", 
+                    "flash": "76561198067379855", 
+                    "sun4": "76561197995912889"},
+        
+        "wall rats": {"legatus": "76561198257342972", 
+                    "strife": "76561197972383519", 
+                    "black jesus": "76561198261795972", 
+                    "zoid": "76561198142074232", 
+                    "drozdzers": "76561198000639694", 
+                    "nurse": "76561198204505424"},
+        
+        "russians": {"vorobey": "76561198035711179", 
+                    "smd": "76561198373793124", 
+                    "x_dias": "76561198857650831", 
+                    "1TY3": "76561198821399014", 
+                    "pupsik": "76561198419106750", 
+                    "uolya": "76561198017935466"},
+        
+        # "snack": {"Sora": "76561198147190605",
+        #             "harbl": "76561198024929695", 
+        #             "robin": "76561198041264237", 
+        #             "Luna": "76561198420882457", 
+        #             "Apolo": "76561198116159344"},
+     
+        "Vodka": {"tsd": "76561198287797509", 
+                    "TendoN": "76561198870764276", 
+                    "cherry": "76561198843962495", 
+                    "adru": "76561198085230924", 
+                    "znach": "76561198173267766", 
+                    "laiky": "76561198258487465"},
+        
+        "GADOU": {"YoungBuck": "76561198000321365",
+                    "spolioz": "76561198035671349",
+                    "elite": "76561198044201431",
+                    "rvn": "76561198044957035",
+                    "azer": "76561198196708482",
+                    "ympo": "76561198202441870"},
+
+        "Quality Control": {"Munky": "76561198009322855",
+                    "Mont": "76561198008462369",
+                    "Cak3": "76561198012633295",
+                    "Tammrock": "76561198029322294",
+                    "Fenrir": "76561198004910829",
+                    "SmAsH": "76561197999115826"},
+
+        "Orange": {"Shizuu": "76561198113918934",
+            "Dave": "76561198046838348",
+            "Sebab": "76561198122706821",
+            "CaptainPadux": "76561198303885943",
+            "Ryan": "76561198091360047",
+            "MindBl4st": "76561198093936708"},
+
+        "Gaeta": {"TBourdon": "76561198105347669",
+            "MattJ": "76561198115594594",
+            "Ja": "76561198052996870",
+            "DeIT": "76561198204007537",
+            "Emiel": "76561198063814219",
+            "Coca": "76561198077605729"},
+    }
+
+    for team in teams:
+        player_comb = kPlayersFromTeam(teams[team], 5, team)
+        players = {**players, **player_comb}
 
 
-    clean_params = {"split_trusted":False, "time_frame":[None, None], "player_frame":[12, 14]}
+
+    # 1601510400: 1 oct 2020
+    # 1605355200: 14 nov 2020 before dreamhack
+    # 1605394800: 14 nov 2020 after dreamhack
+    # clean_params = {"split_trusted":False, "time_frame":[1601510400, 1605355200], "player_frame":[12, 13], "map_frame":cfg.CP_MAPS}
+    clean_params = {"split_trusted":False, "time_frame":[1605394800, None], "player_frame":[12, 13], "map_frame":cfg.CP_MAPS}
 
     for players_id in players: 
 
         print(players_id)
 
-        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 200, "offset": None}
+        args = {"title":None, "uploader":None, "player": players[players_id], "limit": 50, "offset": None}
         obj = LogsRetriever(args)
 
         obj.main(clean_params)

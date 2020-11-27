@@ -1,5 +1,11 @@
 import os
 
+
+# DEV CONFIG
+DEBUG_MODE = False
+
+
+
 # WORKSPACE CONFIG
 DATA_FOLDER = "data"
 
@@ -11,8 +17,11 @@ MATCHES_FILE   = os.path.join(DATA_FOLDER, "matches_data.json")
 MATCHES_RECORD = os.path.join(DATA_FOLDER, "matches_record.txt")
 PLAYER_NAMES   = os.path.join(DATA_FOLDER, "player_names.json")
 
+CSV_LOGS = os.path.join(DATA_FOLDER, "logs.csv")
 
-# QUERY CONFIG
+
+
+# LOGS RETRIEVER
 
 TIMEOUT_DELAY = 4
 
@@ -27,11 +36,24 @@ TRUSTED_UPLOADERS = [URL64_TF2C, URL64_SERVEME]
 
 MIN_MAX_6S = (12, 14)
 
+CP_MAPS   = ["cp_process_final", "cp_process_f5", "cp_process_f6", "cp_snakewater_final1", "cp_gullywash_final1", "cp_sunshine", "cp_granary_pro_rc8", "cp_metalworks", "cp_metalworks_rc7"]
+KOTH_MAPS = ["koth_product_rcx", "koth_product_rc9"]
+SIXIES_MAPS = CP_MAPS + KOTH_MAPS
+
+
+# LOGS TO CSV
+
+TOREMOVE_FROM_CSV_TOPKEYS = ["version", "teams", "names", "chat", "info", "killstreaks", "success", "rounds"]
+
 
 
 # MODULE CONFIG
+
+# TOREMOVE_IN_PLAYER_MATCH_STATS = ['kills', 'deaths', 'assists',
+#                                   'kapd', 'kpd', 'dmg', 'dmg_real', 'dt', 'dt_real',
+#                                   'lks', 'dapd', 'dapm', 'ubers']
 TOREMOVE_IN_PLAYER_MATCH_STATS = ['kills', 'deaths', 'assists',
-                                  'kapd', 'kpd', 'dmg', 'dmg_real', 'dt', 'dt_real',
+                                  'kapd', 'kpd', 'dmg', 'dmg_real', 'dt_real',
                                   'lks', 'dapd', 'dapm', 'ubers']
 TOREMOVE_IN_PLAYER_CLASS_STATS = ['type', 'kills', 'dmg']
 TOREMOVE_IN_PLAYER_WEAPON_STATS = ['shots', 'hits']

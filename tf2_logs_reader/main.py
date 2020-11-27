@@ -58,7 +58,7 @@ https://docs.google.com/document/d/1AMu7iY0VBXkfSu3Mua0zbEwhFf8uC2POKNhb3PydBg4/
 
 if __name__ == "__main__" :
 
-    # jsonDB.clearDatabase(True, True)
+    # jsonDB.clearDatabase(False, True)
 
     # # Gets data from all the logs in the logs folder
     jsonDB.saveAllLogs()
@@ -66,14 +66,18 @@ if __name__ == "__main__" :
     players_id = [log.split(".")[0] for log in os.listdir(cfg.PLAYERS_DIR) if os.path.isfile(os.path.join(cfg.PLAYERS_DIR, log))]
     # print(players_id[0])
 
-    # print(jsonDB.profilePlayerClasses(players_id[0], ["soldier"]))
+    # print(jsonDB.profilePlayerClasses("[U:1:417187459]", ["soldier"]))
 
     # classes_for_analysis = ["demoman", "scout", "soldier"]
-    classes_for_analysis = ["demoman"]
+    classes_for_analysis = ["scout"]
 
     # sort_keys = ["dpm", "kd", "kPerHH"]
-    sort_keys = ["dpm", "kd", "kPerHH"]
+    sort_keys = ["dpm"]
 
     players_interresting_stats = jsonDB.quickRecap(players_id, classes_for_analysis)
-    jsonDB.recapDisplay(players_interresting_stats, sort_keys, 70)
+    jsonDB.recapDisplay(players_interresting_stats, sort_keys, 300)
 
+    # profile = jsonDB.profilePlayerClasses("[U:1:154279630]", ["soldier"], False)
+    # for key in profile:
+    #     for k in profile[key]:
+    #         print(k, profile[key][k])

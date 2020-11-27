@@ -67,6 +67,8 @@ def clearDatabase(clear_logs=False, clear_players=True):
     with open(cfg.MATCHES_RECORD, "w") as file:
         pass
 
+
+
 # PROCESS LOGS FROM THE LOGS FOLDER TO DATABASE
 def saveAllLogs(save_players=True, save_match=True):
     """ Gets all the logs from the logs folder and processes them.
@@ -96,7 +98,7 @@ def saveAllLogs(save_players=True, save_match=True):
             # Saving match
             saveLog(log_file, save_players, save_match)
 
-        else:
+        elif cfg.DEBUG_MODE:
             print(f"log file {log_file} already anaysed")
 
     matches_record.close()
@@ -110,7 +112,7 @@ def saveLog(log_file, save_players=True, save_match=True):
     # sub_dicts = ['teams', 'players', 'names', 'healspread', 'classkills', 'classdeaths', 'classkillassists', 'info']
 
     INPUTS:
-            name of the logs file (str)
+            name of the log file (str)
             option: if True, saves to player database
             option: if True, saves to the match database
     """
@@ -224,6 +226,8 @@ def saveToMatch(match_id, log):
     else:
         print(f"match {match_id} already exists in match database")
 
+
+
 # DATA PRE-PROCESSING
 def preprocessingPlayer(player):
     """ Pre-processes the players object.
@@ -241,8 +245,10 @@ def preprocessingPlayer(player):
     # Saves all data to the player file
     player.save(cfg.PLAYERS_DIR)
 
+
+
 # DATA PROCESSING/EXTRACTING
-def profilePlayerClasses(player_id, classe_names):
+def profilePlayerClasses(player_id, classe_names, detail_weapons=False):
     """ #TODO
 
     INPUTS:
@@ -259,17 +265,37 @@ def profilePlayerClasses(player_id, classe_names):
     # Getting class stats
     class_data = player.sumClassData(classe_names, class_fields)
 
-    # Merging stats from class weapons
-    for class_name in classe_names:
-        weapon_merged_data = Player.Player.mergeWeaponData(class_data[class_name]["weapon"], weapon_fields)
+    if not detail_weapons:
+        # Merging stats from class weapons
+        for class_name in classe_names:
+            weapon_merged_data = Player.Player.mergeWeaponData(class_data[class_name]["weapon"], weapon_fields)
 
-        del class_data[class_name]["weapon"]
-        for key in weapon_merged_data:
-            class_data[class_name][key] = weapon_merged_data[key]
+            del class_data[class_name]["weapon"]
+            for key in weapon_merged_data:
+                class_data[class_name][key] = weapon_merged_data[key]
 
     return class_data
 
+def profilePlayer(player_id, detail_classes, detail_weapons):
+    """  TODO
 
+    INPUTS: 
+    OUTPUT:
+    """ 
+
+    player_fields = ["class_stats", "suicides", "dt", "hr", "as", "ubertypes", "drops", 
+                        "medkits", "medkits_hp", "backstabs", "headshots", "headshots_hit",
+                        "sentries", "heal", "cpc", "ic", "classkills", "classdeaths"]
+    
+    # Reading from the player file to create the player object.
+    with open(os.path.join(cfg.PLAYERS_DIR, player_id + ".json")) as player_json:
+        player = Player.Player.fromJSON(player_json)
+
+    # TODO Code the actual function
+
+    
+
+# QUICK CUSTOM DATA DISPLAY/ANALYSIS
 def quickRecap(players_id, classes):
     """ Quickly shows important data.
 
@@ -333,13 +359,18 @@ def recapDisplay(recap_stats, sort_keys, min_time_played):
         players_interresting_stats = [p for p in recap_stats if p["mins"] != 0]
         players_interresting_stats.sort(key=lambda l: l[sort_key], reverse=True)
 
-        print(f'{"name":29} {"mins":8} {"dpm":8} {"kd":8}  {"kPerHH":8}')
+        print(f'{"team":10} {"name":19} {"mins":8} {"dpm":8} {"kd":8}  {"kPerHH":8}')
         print()
 
         for l in players_interresting_stats:
             # Only takes plqyers that have a certain time (in minutes) on the class
             if l["mins"] >= min_time_played:
-                print(f'{l["name"]:25} {l["mins"]:8} {l["dpm"]:8} {l["kd"]:8}  {l["kPerHH"]:8} {l["id"]:15} {l["class"]:15}')
+                try:
+                    team_name, player_name = l["name"].split("-")
+                except :
+                    team_name, player_name = "", l["name"]
+                
+                print(f'{team_name:10} {player_name:15} {l["mins"]:8} {l["dpm"]:8} {l["kd"]:8}  {l["kPerHH"]:8} {l["id"]:15} {l["class"]:5}')
 
 ####################################################
 ####################| PROGRAM |#####################
@@ -348,21 +379,4 @@ def recapDisplay(recap_stats, sort_keys, min_time_played):
 if __name__ == "__main__" :
 
     pass
-    
-    # clearDatabase()
-
-    # Gets data from all the logs in the logs folder
-    # saveAllLogs()
-
-    # players_id = [log.split(".")[0] for log in os.listdir(cfg.PLAYERS_DIR) if os.path.isfile(os.path.join(cfg.PLAYERS_DIR, log))]
-
-
-    # classes_for_analysis = ["demoman", "scout", "soldier"]
-    # classes_for_analysis = ["demoman"]
-
-    # players_interresting_stats = quickRecap(players_id, classes_for_analysis)
-    
-    # recapDisplay(players_interresting_stats)
-
-
     
