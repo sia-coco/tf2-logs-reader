@@ -1,13 +1,13 @@
 import os
 
 
-# DEV CONFIG
+###### DEV CONFIG
 DEBUG_MODE = False
 
 
 
-# WORKSPACE CONFIG
-DATA_FOLDER = "data"
+###### WORKSPACE CONFIG
+DATA_FOLDER = "data_smiguel"
 
 SQL_DB      = os.path.join(DATA_FOLDER, "logs_data.db")
 LOGS_DIR    = os.path.join(DATA_FOLDER, "stock_logs")
@@ -21,7 +21,7 @@ CSV_LOGS = os.path.join(DATA_FOLDER, "logs.csv")
 
 
 
-# LOGS RETRIEVER
+###### LOGS RETRIEVER
 
 TIMEOUT_DELAY = 4
 
@@ -41,10 +41,24 @@ KOTH_MAPS = ["koth_product_rcx", "koth_product_rc9"]
 SIXIES_MAPS = CP_MAPS + KOTH_MAPS
 
 
-# LOGS TO CSV
+###### LOGS TO CSV
 
-TOREMOVE_FROM_CSV_TOPKEYS = ["version", "teams", "names", "chat", "info", "killstreaks", "success", "rounds"]
+# PRE
+CSV_TOP_KEYS_REMOVAL_RULE_PRE = [[[]], ["version", "names", "chat", "info", "killstreaks", "success", "rounds", "classkills", 'classdeaths', 'classkillassists']]
+CSV_TEAMS_KEYS_REMOVAL_RULE_PRE = [[["teams", None]], ["kills", "deaths", "dmg", "charges", "drops", "caps"]]
+CSV_PLAYER_KEYS_REMOVAL_RULE_PRE = [[["players", None]], ['suicides', 'kapd', 'kpd', 'dmg_real', 'dt_real', 'hr', 'lks', 'as', 'dapd', 'dapm', 'ubers', 'medkits_hp', 'backstabs', 'headshots', 'headshots_hit', 'sentries', 'ic']]
+CSV_MEDICSTATS_KEYS_REMOVAL_RULE_PRE = [[["players", None, "medicstats"]], ['advantages_lost', 'biggest_advantage_lost', 'avg_time_before_healing']]
+CSV_CLASS_KEYS_REMOVAL_RULE_PRE = [[["players", None, "class_stats", None]], ['kills', 'assists', 'deaths', 'dmg', 'weapon']]
+CSV_KEY_REMOVAL_RULES_PRE = [CSV_TOP_KEYS_REMOVAL_RULE_PRE, 
+                        CSV_TEAMS_KEYS_REMOVAL_RULE_PRE,
+                        CSV_MEDICSTATS_KEYS_REMOVAL_RULE_PRE,
+                        CSV_PLAYER_KEYS_REMOVAL_RULE_PRE,
+                        CSV_CLASS_KEYS_REMOVAL_RULE_PRE]
 
+# POST
+CSV_PLAYER_KEYS_REMOVAL_RULE_POST = [[["players", None]], ["class_stats", "team"]]
+CSV_KEY_REMOVAL_RULES_POST = [CSV_PLAYER_KEYS_REMOVAL_RULE_POST, 
+                              ]
 
 
 # MODULE CONFIG
@@ -52,10 +66,10 @@ TOREMOVE_FROM_CSV_TOPKEYS = ["version", "teams", "names", "chat", "info", "kills
 # TOREMOVE_IN_PLAYER_MATCH_STATS = ['kills', 'deaths', 'assists',
 #                                   'kapd', 'kpd', 'dmg', 'dmg_real', 'dt', 'dt_real',
 #                                   'lks', 'dapd', 'dapm', 'ubers']
-TOREMOVE_IN_PLAYER_MATCH_STATS = ['kills', 'deaths', 'assists',
+TOREMOVE_IN_PLAYER_MATCH_STATS  = ['kills', 'deaths', 'assists',
                                   'kapd', 'kpd', 'dmg', 'dmg_real', 'dt_real',
                                   'lks', 'dapd', 'dapm', 'ubers']
-TOREMOVE_IN_PLAYER_CLASS_STATS = ['type', 'kills', 'dmg']
+TOREMOVE_IN_PLAYER_CLASS_STATS  = ['type', 'kills', 'dmg']
 TOREMOVE_IN_PLAYER_WEAPON_STATS = ['shots', 'hits']
 
 TOREMOVE_IN_PLAYER_DICT = {"match": TOREMOVE_IN_PLAYER_MATCH_STATS,

@@ -14,6 +14,7 @@ import json
 
 # FILE IMPORTS
 import config as cfg
+import generic_functions
 
 # Sub-modules
 
@@ -255,7 +256,7 @@ class Player():
                     for field in keys:
                         if field in class_dict:
                             if field == "weapon":
-                                query[class_k]["weapon"] = sumDictsOfDicts(query[class_k]["weapon"], class_dict["weapon"])
+                                query[class_k]["weapon"] = generic_functions.sumDictsOfDicts(query[class_k]["weapon"], class_dict["weapon"])
                             else:
                                 query[class_k][field] += class_dict[field]
 
@@ -278,39 +279,8 @@ class Player():
 
 
 ####################################################
-##################| FONCTIONS |#####################
+##################| FUNCTIONS |#####################
 ####################################################
-
-def sumDicts(a, b):
-    """ Adds the values of dict b to the ones of dict a. If a field of b doesn't exist in a, adds it.
-    Modifies the given dict a.
-    # TODO
-    INPUTS:
-    OUTPUT:
-    """
-
-    for field in b:
-        if field in a:
-            a[field] += b[field]
-        else:
-            a[field] = b[field]
-
-    return a
-
-def sumDictsOfDicts(a, b):
-    """ #TODO
-
-    INPUTS:
-    OUTPUT:
-    """
-
-    for sub_dict in b:
-        if sub_dict in a:
-            a[sub_dict] = sumDicts(a[sub_dict], b[sub_dict])
-        else:
-            a[sub_dict] = b[sub_dict]
-
-    return a
 
 
 ####################################################
@@ -319,7 +289,7 @@ def sumDictsOfDicts(a, b):
 
 
 ####################################################
-##################| CONSTANTES |####################
+###################| CONSTANTS |####################
 ####################################################
 
 

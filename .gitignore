@@ -5,3 +5,4 @@ __pycache__/
 *.db
 notes.txt
 .vscode
+*.csv
