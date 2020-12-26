@@ -27,6 +27,7 @@ from Match import *
 
 import jsonDB
 import logsToCSV
+import logs_retriever
 
 # Sub-modules
 
@@ -81,14 +82,19 @@ class RecapSortByEnum(str, Enum):
 
 
 @app.command()
-def retriever():
+def retriever(split_trusted: bool = typer.Option(False)):
     """ Logs retriever tool.
 
     INPUTS: 
 
     OUTPUT:
     """ 
-    typer.echo("|  >  Logs Retriever CLI")
+
+    typer.secho(f"Retrieving logs...", fg="cyan", bold=True)
+
+    logs_retriever.retrieveLogs(split_trusted)
+
+    typer.secho(f"Logs saved in {cfg.LOGS_DIR}", fg="cyan", bold=True)
 
 
 @app.command()

@@ -6,24 +6,61 @@ import tf2_logs_reader.config as cfg
 ####################
 
 
+############################
+###### LOGS RETRIEVER ######
+############################
 
-###### LOGS RETRIEVER
+### UPLOADER PARAMETER
 
 # List of steamid64 from uploaders you trust.
 TRUSTED_UPLOADERS = cfg.TRUSTED_UPLOADERS
 
+
+### PLAYER AMOUNT PARAMETER
+
 # Range of player amount you consider acceptable for a 6s game.
 MIN_MAX_6S = cfg.MIN_MAX_6S
 
+
+### MAPS PARAMETER
+
 # List of Capture Point maps you want to consider for 6s. Has to be the exact names.
 CP_MAPS   = cfg.CP_MAPS
+
 # List of King Of The Hill maps you want to consider for 6s. Has to be the exact names.
 KOTH_MAPS = cfg.KOTH_MAPS
+
 # List of 6s maps you want to consider, all gamemodes.
 SIXIES_MAPS = CP_MAPS + KOTH_MAPS
 
+# List of the maps considered by the logs retriever
+MAPS = SIXIES_MAPS
 
-###### LOGS TO CSV
+
+### STEAM ID'S PARAMETER
+
+# Players for logs retrieving
+PLAYERS = {} # {"playername": "steamid64", ..}
+
+# Teams for logs retrieving
+TEAMS = {} # {"teamname": {"playername": "steamid64", ..}, ..}
+
+K_PLAYERS_FROM_TEAM = 5
+
+
+### TIME FRAME PARAMETER
+
+TIME_FRAME = [None, None] # [int, int] with int a unix time
+
+
+### LIMIT/OFFSET PARAMETER
+
+LIMIT_QUERY = 100
+OFFSET_QUERY = None
+
+############################
+######## LOGS TO CSV #######
+############################
 
 # PRE
 csv_rule_pre = [[[]], []] # Rule skeleton

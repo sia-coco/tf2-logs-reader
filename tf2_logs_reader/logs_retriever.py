@@ -59,7 +59,6 @@ class LogsRetriever():
         # The list of logs we are going to work on
         self.log_list         = None
 
-
     def main(self, clean_params):
         """ 
         """ 
@@ -94,7 +93,6 @@ class LogsRetriever():
 
         # Select logs of particular maps
         self.log_list = selectLogsListFrame(self.log_list, "map", str_frame=map_frame)
-
 
     def splitLogsTrustedUntrusted(self):
         """  takes a list of logs and discriminates the ones from trusted 
@@ -137,7 +135,6 @@ class LogsRetriever():
 
         return (trusted_uploaders_log_list, other_log_list)
     
-
 
     ###### DOWNLOAD LOGS ######
 
@@ -193,7 +190,6 @@ class LogsRetriever():
         print(" > Done downloading")
 
 
-
     ###### USER UTILITY/PRINTS ######
 
     def profilePlayersLogs(self):
@@ -206,7 +202,6 @@ class LogsRetriever():
         print(f"total logs: {len(result[0])+len(result[1])}")
         print(f"trusted uploaders logs: {len(result[0])}")
         print(f"other logs: {len(result[1])}")
-
 
 
 ####################################################
@@ -333,6 +328,36 @@ def kPlayersFromTeam(team, k, team_name):
 
     return players  
 
+def retrieveLogs(split_trusted):
+    """  Retrieves logs from logs.tf according to parameters and filters.
+
+    INPUTS: 
+    OUTPUT:
+    """ 
+    
+    # Query targets
+    players = wscfg.PLAYERS
+    teams = wscfg.TEAMS
+
+    for team in teams:
+        player_comb = kPlayersFromTeam(teams[team], wscfg.K_PLAYERS_FROM_TEAM, team)
+        players = {**players, **player_comb}
+
+    # Query filters
+    clean_params = {"split_trusted":split_trusted, "time_frame":wscfg.TIME_FRAME, "player_frame":wscfg.MIN_MAX_6S, "map_frame":wscfg.MAPS}
+
+    for players_ids in players: 
+
+        print(players_ids)
+
+        args = {"title":None, "uploader":None, "player": players[players_ids], "limit": wscfg.LIMIT_QUERY, "offset": wscfg.OFFSET_QUERY}
+        obj = LogsRetriever(args)
+
+        obj.main(clean_params)
+        obj.downloadLogsFromList()
+
+        print()
+
 ####################################################
 ###################| CONSTANTS |####################
 ####################################################
@@ -344,143 +369,4 @@ def kPlayersFromTeam(team, k, team_name):
 
 if __name__ == '__main__':
     
-
-    players = {"all": ""}
-
-    teams = {}
-
-
-    # players = {
-    #     "sia": "76561198377453187"}
-
-    # teams = {
-    #     "Weebtech": {"aqua": "76561198800637336", 
-    #                 "Frager": "76561198323411853", 
-    #                 "strange_magic": "76561197993508562",
-    #                 "Houf": "76561198448050535", 
-    #                 "Miku": "76561198127793996",},
-    # }
-
-    # teams = {
-    #     "NeedDM": {"mystt": "76561198114545358", 
-    #                "daga": "76561198105323129", 
-    #                "slowtown": "76561198108814551",
-    #                 },
-    # }
-
-    # teams = {
-        # "Gucci": {"smi": "76561198056760624", 
-        #             "sia": "76561198377453187", 
-        #             # "hud": "76561198020644759", 
-        #             "Dying Tom": "76561197975576152",
-        #             "snb": "76561198021205963", 
-        #             "neko": "76561198144936805",
-        #             "b4ro": "76561198041043955"},
-
-        # "frenchies": {"rdm": "76561198075159093", 
-        #             "Reyviix": "76561198268216386",
-        #             "azitio": "76561198084056439", 
-        #             "gtlm": "76561198084798301", 
-        #             "flash": "76561198067379855", 
-        #             "sun4": "76561197995912889"},
-        
-        # "wall rats": {"legatus": "76561198257342972", 
-        #             "strife": "76561197972383519", 
-        #             "black jesus": "76561198261795972", 
-        #             "zoid": "76561198142074232", 
-        #             "drozdzers": "76561198000639694", 
-        #             "nurse": "76561198204505424"},
-        
-        # "russians": {"vorobey": "76561198035711179", 
-        #             "smd": "76561198373793124", 
-        #             "x_dias": "76561198857650831", 
-        #             "1TY3": "76561198821399014", 
-        #             "pupsik": "76561198419106750", 
-        #             "uolya": "76561198017935466"},
-        
-        # "snack": {"Sora": "76561198147190605",
-        #             "harbl": "76561198024929695", 
-        #             "robin": "76561198041264237", 
-        #             "Luna": "76561198420882457", 
-        #             "Apolo": "76561198116159344"},
-     
-        # "Vodka": {"tsd": "76561198287797509", 
-        #             "Osero": "76561198277024404", 
-        #             "janteri": "76561198305961381", 
-        #             "adru": "76561198085230924", 
-        #             "znach": "76561198173267766", 
-        #             "laiky": "76561198258487465"},
-        
-        # "GADOU": {"YoungBuck": "76561198000321365",
-        #             "spolioz": "76561198035671349",
-        #             "elite": "76561198044201431",
-        #             "rvn": "76561198044957035",
-        #             "azer": "76561198196708482",
-        #             "ympo": "76561198202441870"},
-
-        # "Quality Control": {"Munky": "76561198009322855",
-        #             "Mont": "76561198008462369",
-        #             "Cak3": "76561198012633295",
-        #             "Tammrock": "76561198029322294",
-        #             "Fenrir": "76561198004910829",
-        #             "SmAsH": "76561197999115826"},
-
-        # "Orange": {"Shizuu": "76561198113918934",
-        #     "Dave": "76561198046838348",
-        #     "Sebab": "76561198122706821",
-        #     "CaptainPadux": "76561198303885943",
-        #     "Ryan": "76561198091360047",
-        #     "MindBl4st": "76561198093936708"},
-
-        # "Gaeta": {"TBourdon": "76561198105347669",
-        #     "MattJ": "76561198115594594",
-        #     "Ja": "76561198052996870",
-        #     "DeIT": "76561198204007537",
-        #     "Emiel": "76561198063814219",
-        #     "Coca": "76561198077605729"},
-
-        # "My h": {"cento": "76561198125326350",
-        #     "Mayonnaise": "76561198851095301",
-        #     "bruh": "76561198872953118",
-        #     "tuom": "76561198256619964",
-        #     "humr": "76561198865636135",
-        # },
-
-        # "Exalt": {"kult": "	76561198060304615",
-        #     "jacke": "76561198079293438",
-        #     "peeka": "76561198088125671",
-        #     "ikaros": "76561198158482651",
-        #     "nut": "76561198214173279",
-        #     "general zero": "76561198254826183",
-        # }
-    # }
-
-    
-
-    for team in teams:
-        player_comb = kPlayersFromTeam(teams[team], 5, team)
-        players = {**players, **player_comb}
-
-
-
-    # 1601510400: 1 oct 2020
-    # 1605355200: 14 nov 2020 before dreamhack
-    # 1605394800: 14 nov 2020 after dreamhack
-    # clean_params = {"split_trusted":False, "time_frame":[1601510400, 1605355200], "player_frame":[12, 12], "map_frame":wscfg.CP_MAPS}
-    clean_params = {"split_trusted":False, "time_frame":[1605394800, None], "player_frame":wscfg.MIN_MAX_6S, "map_frame":wscfg.CP_MAPS}
-    
-
-
-
-    # for players_id in players: 
-
-    #     print(players_id)
-
-    #     args = {"title":None, "uploader":None, "player": players[players_id], "limit": 1, "offset": None}
-    #     obj = LogsRetriever(args)
-
-    #     obj.main(clean_params)
-    #     obj.downloadLogsFromList()
-
-    #     print()
-
+    pass

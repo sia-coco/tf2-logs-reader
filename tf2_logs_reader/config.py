@@ -12,7 +12,7 @@ DEV_MODE = DEBUG_MODE or False
 ###### FOLDER/FILE CONFIG
 
 #---------------------------------
-WORKSPACE_NAME = "data_smiguel" 
+WORKSPACE_NAME = "test_data" 
 #---------------------------------
 
 RESSOURCES_FOLDER = "ressources"
