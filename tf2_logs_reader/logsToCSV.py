@@ -29,6 +29,9 @@ ex:
 https://logs.tf/json/2731991
 https://logs.tf/json/2715078
 Mystery to solve.
+
+OH, some news, an "undefined" class exists too...
+https://logs.tf/json/2779696
 '''
 
 ####################################################
@@ -86,6 +89,8 @@ def listToDict(dict_list, name_field=None, use_index=False):
             name of the key in sub dicts from which to use the value as a key for the sub dicts
                 example: using key "class" in [{'class': 'soldier', ...}] 
                             gives {'soldier': {'class': 'soldier, ...}}
+                ignored if use_index is set to True
+            option : uses the index of the element in the list as a key
     OUTPUT:
     """ 
 
@@ -107,21 +112,32 @@ def listToDict(dict_list, name_field=None, use_index=False):
 
 # KEY REMOVAL
 def removeKeys(data, rules):
-    """  TODO
+    """ Removes keys (and elements they link to) from the data (nested dicts) according to
+    given rules.
 
     A rule is a list of paths + the keys to remove at the end of these paths.
+
+    A path is a list of path segments. A path segment is a dict key in the data.
+
+    A path segment can be replaced by None as a wildcard to generate new paths 
+    with all of the possible sub path segments accessible from it.
 
     TODO: can't access lists, for example class stats for each player.
 
     INPUTS: 
+            logs data (mostly nested dicts)
+            rules for the removal:
+                [[["path_segment1", ..], ..], ["key_to_remove1", ..]] 
     OUTPUT:
+            the logs data with keys deleted
     """ 
-    # print(data["players"]["[U:1:57669738]"]["medicstats"].keys())
 
+    # Making a copy of the rule list
     rules = [rule for rule in rules]
 
     for rule in rules:
 
+        # Making a copy of the path list
         paths = [path for path in rule[0]]
 
         # Path finding
@@ -129,33 +145,31 @@ def removeKeys(data, rules):
             
             head = data
             del_mode = True
+
             for i, path_segment in enumerate(path):
 
+                # If a None wildcard has been used, generates the new paths
                 if path_segment is None:
                     del_mode = False
 
                     if isinstance(head, list):
-                        # print(path[i-2])
                         for key in range(len(head)):
                             paths.append(path[:i]+[key]+path[i+1:])
-                        # if path[i-2] == '[U:1:60940235]':
-                        #     print(head)
-                        #     print(len(head))
-                        #     print(paths[-1])
 
                     elif isinstance(head, dict):
                         for key in head:
                             # Yup, modifying the list being explored :) Woohoo!
                             paths.append(path[:i]+[key]+path[i+1:])
 
+                    # breaking since the current path is only a scheme for actual paths
+                    # and shouldn't be used to delete keys direcly
                     break
                 
+                # Going to next segment
                 if isinstance(head, dict):
                     if path_segment in head:
                         head = head[path_segment]
                 elif isinstance(head, list):
-                    # print(head)
-                    # print(len(head), path)
                     head = head[path_segment]
                 else:
                     continue
@@ -171,11 +185,13 @@ def removeKeys(data, rules):
     return data
 
 def dirtyFixKeys(data):
-    """ Ehhhh removes keys we don't want, add some we want to guarantee. This function is not generic, just a placeholder
-    until i find a better function.
+    """ Ehhhh removes keys we don't want, add some we want to guarantee. This function 
+    is not generic, just a placeholder until I find better functions.
 
     INPUTS: 
+            logs data
     OUTPUT:
+            modified logs data
     """ 
     
     # remove the "drops" stat from classes that aren't medic
@@ -190,13 +206,28 @@ def dirtyFixKeys(data):
 
             if "medicstats" in data["players"][player_id]:
                 del data["players"][player_id]["medicstats"]
+
+            if player_id in data["healspread"]:
+                del data["healspread"][player_id]
         
         else:
             if not "ubertypes" in data["players"][player_id]:
                 data["players"][player_id]["ubertypes"] = {}
-            for medigun in ["medigun", "kritzkrieg"]:
+            
+            for medigun in ["medigun", "kritzkrieg", "unknown"]:
                 if not medigun in data["players"][player_id]["ubertypes"]:
                     data["players"][player_id]["ubertypes"][medigun] = 0
+            
+            if not "medicstats" in data["players"][player_id]:
+                data["players"][player_id]["medicstats"] = {}
+
+            for med_stat in ["deaths_with_95_99_uber", "deaths_within_20s_after_uber"]:
+                if not med_stat in data["players"][player_id]["medicstats"]:
+                    data["players"][player_id]["medicstats"][med_stat] = 0
+            
+            for med_stat in ["avg_time_to_build", "avg_time_before_using", "avg_uber_length"]:
+                if not med_stat in data["players"][player_id]["medicstats"]:
+                    data["players"][player_id]["medicstats"][med_stat] = None
 
 
     return data
@@ -217,7 +248,7 @@ def getPlaytimes(data):
     """ 
 
     # Creates the return dict
-    class_names = ["scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy", "unknown"]
+    class_names = ["scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy", "unknown", "undefined"]
     class_based = {colour: {class_name:[] for class_name in class_names} for colour in ["Red", "Blue"]}
 
     id_list = list(data["players"].keys())
@@ -309,20 +340,17 @@ def solveRolesFromPlaytimes(player_based_playtimes, class_based_playtimes, data)
 
     return players_roles
 
-def idsToClass(data):
+def idsToClass(data, players_roles):
     """ Renames the id's from the log to the role of the player.
     
     INPUTS: 
+            logs data
+            class based roles dict, sorted in order (first = meets the criteria the most):
+                {"Blue": {"class1": ["player_id1", ..], ..}, "Red": {..}}
+
     OUTPUT:
+            modified logs data
     """ 
-
-    # TODO
-
-    # Getting player class playtimes
-    class_based_playtimes, player_based_playtimes = getPlaytimes(data)
-
-    # Classify players to their class
-    players_roles = solveRolesFromPlaytimes(player_based_playtimes, class_based_playtimes, data)
 
     # Call dictKeyRename for each player
     for team in players_roles:
@@ -330,7 +358,7 @@ def idsToClass(data):
             for i in range(len(players_roles[team][class_played])):
                 dictKeyRename(data, players_roles[team][class_played][i], team+class_played.capitalize()+str(i+1))
 
-    return data, players_roles
+    return data
     
 def dictKeyRename(iterable, old_key, new_key):
     """ Renames a key in a dict, recursively.
@@ -362,24 +390,120 @@ def dictKeyRename(iterable, old_key, new_key):
     return iterable
 
 # OFFCLASSES
-
-def filterOffclassGames():
+def filterOffclassGames(player_based_playtimes, mainclasses, criterias, response=False):
     """  If a game has too much offclass (variety, amout, time) it's not counted.
 
-    TODO
+    criterias:
+        offclass_blacklist : list of offclasses not accepted : list of str
+
+        offclass_limits : max threshold for each offclass : dict {class: int}
+        offclass_quotas : max limit percentage of the total playtime spent offclassing
+
+        total_offclass_limit : max threshold of summed offclasses
+        total_offclass_quota : max limit percentage of summed offclasses
+
 
     INPUTS: 
+            list of the classes considered main classes : list of str
+            playtimes for each player on each of their played classes
+            criterias : dict of criterias
+                program handles known criterias
+            the response the function has to give if the criterias aren't met
     OUTPUT:
+            response (bool) if the criterias aren't met, !response otherwise
     """ 
-    pass
+
+    # Simplifying the structure
+    playtimes = [player_based_playtimes[team][player_id] for team in player_based_playtimes for player_id in player_based_playtimes[team]]
+
+    for criteria in criterias:
+
+        if criteria == "offclass_blacklist":
+            for player in playtimes:
+                for class_played in player:
+                    if class_played[0] in criterias[criteria]:
+                        return response
+
+        elif criteria == "offclass_limits":
+            for player in playtimes:
+                for class_played in player:
+                    if class_played[0] in criterias[criteria]:
+                        if class_played[1] > criterias[criteria][class_played[0]]:
+                            return response
+        
+        elif criteria == "offclass_quotas":
+            for player in playtimes:
+                total_playtime = sum([class_played[1] for class_played in player])
+                for class_played in player:
+                    if class_played[0] in criterias[criteria]:
+                        if class_played[1]/total_playtime > criterias[criteria][class_played[0]]:
+                            return response
+                
+        
+        elif criteria == "total_offclass_limit":
+            for player in playtimes:
+                total_offclass_time = sum([class_played[1] for class_played in player if class_played[0] not in mainclasses])
+                if total_offclass_time > criterias[criteria]:
+                    return response
+        
+        elif criteria == "total_offclass_quota":
+            for player in playtimes:
+                total_playtime = sum([class_played[1] for class_played in player])
+                total_offclass_time = sum([class_played[1] for class_played in player if class_played[0] not in mainclasses])
+                if total_offclass_time/total_playtime > criterias[criteria]:
+                    return response
+        
+        else:
+            print(f" > ERROR: logsToCSV.py, filterOffclassGames, criteria {criteria} isn't known.")
+
+    return not response
+
+# CLASS LIMIT
+def filterClassLimit(players_roles, criterias, response=False):
+    """  If a game has unwanted mainclasses (type, amount) it's not counted.
+
+    criterias:
+        classlimit_ranges : range of the amount of players 
+            that can main a certain class for each team
+
+    INPUTS: 
+
+            criterias : dict of criterias
+                program handles known criterias
+            the response the function has to give if the criterias aren't met
+
+    OUTPUT:
+            response (bool) if the criterias aren't met, !response otherwise
+    """ 
+
+    for criteria in criterias:
+
+        if criteria == "classlimit_ranges":
+            for team in players_roles:
+                for class_played in criterias[criteria]:
+                    if class_played in players_roles[team]:
+                        amount_of_players = len(players_roles[team][class_played])
+                        if amount_of_players < criterias[criteria][class_played][0] or amount_of_players > criterias[criteria][class_played][1]:
+                            return response
+                    elif criterias[criteria][class_played][0] > 0:
+                        return response
+
+        else:
+            print(f" > ERROR: logsToCSV.py, filterOffclassGames, criteria {criteria} isn't known.")
+
+
+    return not response
 
 # LOGS TO CSV
-def logToCSVDict(log_file, ids_to_class=False):
-    """  Reads a log file and makes a csv file out of it.
+def logToCSVDict(log_file, ids_to_class=False, filter_class_limit=False):
+    """  Reads a log file and prepares the dict so it is ready to be added to a CSV file.
 
     INPUTS: 
             name of the log file (str)
+            option: True if steam id's in the logs should e converted into the roles played
+            option: True if the logs should be filtered according to classes played
     OUTPUT:
+            A flat dict, pre processed
     """ 
 
     with open(os.path.join(cfg.LOGS_DIR, log_file)) as json_file:
@@ -387,30 +511,49 @@ def logToCSVDict(log_file, ids_to_class=False):
         # Converting json data into python dict
         dict_data = json.load(json_file)
 
-        # Removing keys we don't want to reduce data early
-        dict_data = removeKeys(dict_data, cfg.CSV_KEY_REMOVAL_RULES_PRE)
+    # Removing keys we don't want to reduce data early
+    dict_data = removeKeys(dict_data, wscfg.CSV_KEY_REMOVAL_RULES_PRE)
 
-        # Deducing main classes and roles
-        if ids_to_class:
-            dict_data, players_roles = idsToClass(dict_data)
+    # Getting player class playtimes
+    class_based_playtimes, player_based_playtimes = getPlaytimes(dict_data)
 
-        dict_data = dirtyFixKeys(dict_data)
+    # If the offclassing criterias aren't met log is ignored
+    if not filterOffclassGames(player_based_playtimes, wscfg.CSV_MAINCLASSES, wscfg.CSV_OFFCLASS_CRITERIAS, response=False):
+        return None
 
-        # Removing keys we don't need anymore for the processing
-        dict_data = removeKeys(dict_data, cfg.CSV_KEY_REMOVAL_RULES_POST)
+    # Classify players to their class if needed
+    if ids_to_class or filter_class_limit:
+        players_roles = solveRolesFromPlaytimes(player_based_playtimes, class_based_playtimes, dict_data)
 
-        # Flattening the structure
-        flat = flattenDict(dict_data)
+    # If the mainclasses criterias aren't met log is ignored
+    if filter_class_limit:
+        if not filterClassLimit(players_roles, wscfg.CSV_CLASSLIMIT_CRITERIAS):
+            return None
+
+    # Deducing main classes and roles
+    if ids_to_class:
+        dict_data = idsToClass(dict_data, players_roles)
+
+    dict_data = dirtyFixKeys(dict_data)
+
+    # Removing keys we don't need anymore for the processing
+    dict_data = removeKeys(dict_data, wscfg.CSV_KEY_REMOVAL_RULES_POST)
+
+    # Flattening the structure
+    flat = flattenDict(dict_data)
 
     return flat
 
 def dictsToCSV(dicts_list, filename):
     """
     Takes a list of dictionaries as input and outputs a CSV file.
+
+    INPUTS:
+            list of csv ready dicts
+            filename to store the csv data in
     """
 
     fieldnames = list(dicts_list[0].keys())
-    # print(fieldnames)
     
     with open(filename, 'w') as csv_file:
 
@@ -419,8 +562,16 @@ def dictsToCSV(dicts_list, filename):
         header = dict((fn, fn) for fn in fieldnames)
         csvwriter.writerow(header)
         
-        for row in dicts_list:
-            csvwriter.writerow(row)
+        for i, row in enumerate(dicts_list):
+            if cfg.DEBUG_MODE:
+                print(f"log n°{i+1}")
+                csvwriter.writerow(row)
+            else:
+                try:
+                    csvwriter.writerow(row)
+                except:
+                    pass
+            
 
 ####################################################
 ###################| CONSTANTS |####################
@@ -438,39 +589,33 @@ if __name__ == '__main__':
     
     dicts_list = []
 
-    # CSV_dict = logToCSVDict("2733105.json", ids_to_class=True)
+    # CSV_dict = logToCSVDict(log_files[143], ids_to_class=True, filter_class_limit=True)
     # dicts_list.append(CSV_dict)
+    # print(log_files[143])
 
     # for log in ["2733009.json", "2733105.json"]:
     #     print(log)
     #     CSV_dict = logToCSVDict(log, ids_to_class=True)
     #     dicts_list.append(CSV_dict)
 
-    i=1
-    for log in log_files:
-        if log in ["2752628.json", "2755434.json", "2759352.json", "2755330.json", "2761066.json", "2760231.json", "2755351.json", "2752576.json", "2760289.json", "2772057.json", "2768327.json", "2769247.json", "2769189.json", "2768424.json", "2769280.json"]:
-            continue
-        print(i, log)
-        i+=1
-        CSV_dict = logToCSVDict(log, ids_to_class=True)
-        dicts_list.append(CSV_dict)
+    i = 0
+    for j, log in enumerate(log_files):
+        # if log in []:
+        #     continue
+        CSV_dict = logToCSVDict(log, ids_to_class=True, filter_class_limit=True)
+        if not CSV_dict is None:
+            dicts_list.append(CSV_dict)
+        else:
+            i+=1
+            print(f"log n°{j+1}, {log} removed")
+        
+    print(f"{i} logs denied")
+    print(log_files[142])
 
+    # Create a CSV file with each dict content as a line
     dictsToCSV(dicts_list, cfg.CSV_LOGS)
 
 
-    # print(csv)
-
+    # For tests
     with open("flat.json", "w") as test_file:
         test_file.write(json.dumps(CSV_dict))
-
-
-
-    # with open(os.path.join(cfg.LOGS_DIR, "2704470.json")) as json_file:
-
-    #     # Converting json data into python dict
-    #     data = json.load(json_file)
-
-    #     data = dictKeyRename(data, "[U:1:85086904]", "medic69")
-
-    # with open("test.json", "w") as test_file:
-    #     test_file.write(json.dumps(data))

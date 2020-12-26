@@ -70,14 +70,14 @@ def clearDatabase(clear_logs=False, clear_players=True):
 
 
 # PROCESS LOGS FROM THE LOGS FOLDER TO DATABASE
-def saveAllLogs(save_players=True, save_match=True):
-    """ Gets all the logs from the logs folder and processes them.
-    If they have already been processed they won't be processed again.
-    Each processed log has its ID saved in the matches record file.
+def parseAllLogs(save_players=True, save_match=True):
+    """ Gets all the logs from the logs folder and parses them.
+    If they have already been parsed they won't be parsed again.
+    Each parsed log has its ID saved in the matches record file.
 
     INPUTS:
-            option: if True, saves to player database
-            option: if True, saves to the match database
+            option: if True, saves player data to player database
+            option: if True, saves match data to match database
     """
     # Getting all the files from the logs folder
     log_files = [log for log in os.listdir(cfg.LOGS_DIR) if os.path.isfile(os.path.join(cfg.LOGS_DIR, log))]
@@ -96,14 +96,14 @@ def saveAllLogs(save_players=True, save_match=True):
             matches_record.write(log_file.split(".")[0]+"\n")
 
             # Saving match
-            saveLog(log_file, save_players, save_match)
+            parseLog(log_file, save_players, save_match)
 
         elif cfg.DEBUG_MODE:
             print(f"log file {log_file} already anaysed")
 
     matches_record.close()
 
-def saveLog(log_file, save_players=True, save_match=True):
+def parseLog(log_file, save_players=True, save_match=True):
     """ Saves data from a an individual logs file in the database.
     If it has already been processed it won't be processed again.
     Else its ID saved in the matches record file.
