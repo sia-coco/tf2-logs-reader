@@ -26,6 +26,7 @@ import Player
 from Match import *
 
 import jsonDB
+import logsToCSV
 
 # Sub-modules
 
@@ -91,14 +92,21 @@ def retriever():
 
 
 @app.command()
-def tocsv():
+def tocsv(ids_to_class: bool = typer.Option(True), 
+          class_limit: bool = typer.Option(True)
+        ):
     """ Logs to csv converter tool.
 
     INPUTS: 
 
     OUTPUT:
     """ 
-    pass
+
+    typer.secho(f"generating CSV file...", fg="cyan", bold=True)
+    
+    logsToCSV.workspaceLogsToCSV(ids_to_class, class_limit)
+
+    typer.secho(f"CSV file generated in {cfg.CSV_LOGS}", fg="cyan", bold=True)
 
 
 @app.command()

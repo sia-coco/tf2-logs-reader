@@ -6,12 +6,13 @@ import os
 
 ###### DEV CONFIG
 DEBUG_MODE = False
+DEV_MODE = DEBUG_MODE or False
 
 
 ###### FOLDER/FILE CONFIG
 
 #---------------------------------
-WORKSPACE_NAME = "data" 
+WORKSPACE_NAME = "data_smiguel" 
 #---------------------------------
 
 RESSOURCES_FOLDER = "ressources"
@@ -179,4 +180,3 @@ MATCH_PLAYER_ASSOCIATION_SQL = """ CREATE TABLE IF NOT EXISTS matches_players (
                                 FOREIGN KEY (player_id) REFERENCES players (id)
                            );
                            """
-                           
