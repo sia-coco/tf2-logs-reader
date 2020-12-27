@@ -26,6 +26,9 @@ sys.path.insert(0, os.path.abspath("./")) #
 wscfg = importlib.import_module(".".join([cfg.WORKSPACES, cfg.WORKSPACE_NAME, "wsconfig"])) 
 
 ''' TO DO LIST
+Query logging system so we can check what were the queries made 
+for a certain workspace. Maybe with the exact time of when it was made plus the
+parameters.
 '''
 
 
@@ -152,7 +155,7 @@ class LogsRetriever():
         logs_ids_list = [log_id for log_id in logs_ids_list if log_id not in already_dowloaded_logs]
         new_size = len(logs_ids_list)
 
-        print(f"{old_size - new_size} logs already downloaded. Remaining amount to download: {new_size}")
+        print(f"Total logs: {old_size}. Already downloaded: {old_size - new_size}. Remaining to download: {new_size}")
 
 
         dl_count = 0
@@ -305,6 +308,7 @@ def removeDuplicates():
     INPUTS: 
     OUTPUT:
     """ 
+    # TODO
     pass
 
 def kPlayersFromTeam(team, k, team_name):

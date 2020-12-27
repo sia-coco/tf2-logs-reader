@@ -54,6 +54,13 @@ def setup():
         with open(os.path.join(cfg.WORKSPACES, "__init__.py"), "w") as file:
             pass
 
+    # Ressoures dir
+    if not os.path.exists(cfg.RESSOURCES_FOLDER):
+        os.makedirs(cfg.RESSOURCES_FOLDER)
+        print(f"# + Created folder {cfg.RESSOURCES_FOLDER} to store the ressource files.")
+    else:
+        print(f"# Folder {cfg.RESSOURCES_FOLDER} already exists.")
+
 
     # Workspace dir
     if not os.path.exists(cfg.WORKSPACE_FOLDER):
@@ -77,7 +84,7 @@ def setup():
 
 
     # Files
-    for json_file in [cfg.MATCHES_FILE, cfg.PLAYER_NAMES]:
+    for json_file in [cfg.MATCHES_FILE, cfg.PLAYER_NAMES, cfg.TEAMS_FILE]:
         if not os.path.exists(json_file):
             with open(json_file, "w") as file:
                 file.write("{}")

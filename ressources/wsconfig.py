@@ -1,4 +1,6 @@
 import os
+import json
+
 import tf2_logs_reader.config as cfg
 
 ####################
@@ -43,7 +45,10 @@ MAPS = SIXIES_MAPS
 PLAYERS = {} # {"playername": "steamid64", ..}
 
 # Teams for logs retrieving
-TEAMS = {} # {"teamname": {"playername": "steamid64", ..}, ..}
+with open(cfg.TEAMS_FILE) as teams_file:
+    teams_dict = json.load(teams_file)
+
+TEAMS = {**teams_dict} # {"teamname": {"playername": "steamid64", ..}, ..}
 
 K_PLAYERS_FROM_TEAM = 5
 

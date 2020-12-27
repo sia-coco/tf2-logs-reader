@@ -12,7 +12,7 @@ DEV_MODE = DEBUG_MODE or False
 ###### FOLDER/FILE CONFIG
 
 #---------------------------------
-WORKSPACE_NAME = "test_data" 
+WORKSPACE_NAME = "data" 
 #---------------------------------
 
 RESSOURCES_FOLDER = "ressources"
@@ -28,7 +28,8 @@ PLAYERS_DIR = os.path.join(WORKSPACE_FOLDER, "players_data")
 WORKSPACE_CONFIG = os.path.join(WORKSPACE_FOLDER, "wsconfig.py")
 MATCHES_FILE     = os.path.join(WORKSPACE_FOLDER, "matches_data.json")
 MATCHES_RECORD   = os.path.join(WORKSPACE_FOLDER, "matches_record.txt")
-PLAYER_NAMES     = os.path.join(WORKSPACE_FOLDER, "player_names.json")
+PLAYER_NAMES     = os.path.join(RESSOURCES_FOLDER, "player_names.json")
+TEAMS_FILE       = os.path.join(RESSOURCES_FOLDER, "teams.json")
 CSV_LOGS = os.path.join(WORKSPACE_FOLDER, "logs.csv")
 
 

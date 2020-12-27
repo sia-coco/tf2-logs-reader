@@ -86,11 +86,14 @@ def parseAllLogs(save_players=True, save_match=True):
     matches_record = open(cfg.MATCHES_RECORD, 'r+')
     matches_list = [match[:-1] for match in list(matches_record)] # [-1] to remove '\n'
 
+    logs_amount = len(log_files)
     # Saving all of them
-    for log_file in log_files:
+    for i, log_file in enumerate(log_files):
 
         # Checking if it has been saved already
         if not log_file.split(".")[0] in matches_list:
+
+            print(f"{i}/{logs_amount}")
 
             # Adding match to the saved match list
             matches_record.write(log_file.split(".")[0]+"\n")

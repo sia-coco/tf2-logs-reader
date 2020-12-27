@@ -4,6 +4,9 @@ __pycache__/
 *.db
 notes.txt
 .vscode
+.VSCodeCounter
 
 tests
 workspaces/*
+teams.json
+player_names.json
